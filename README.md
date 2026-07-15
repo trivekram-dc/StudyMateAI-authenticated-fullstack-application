@@ -1,0 +1,1 @@
+# StudyMateAI-authenticated-fullstack-application
