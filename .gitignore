@@ -9,6 +9,8 @@ backend/.env
 frontend/node_modules/
 frontend/dist/
 frontend/.env
+backend/frontend_dist/
+studymate-ai-deployment.zip
 
 # Editor / OS
 .DS_Store

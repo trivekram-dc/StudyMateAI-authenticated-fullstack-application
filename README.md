@@ -163,11 +163,18 @@ Manual verification checklist:
 
 ## Deployment notes
 
-The intended production deployment is a Vite frontend on Vercel or Netlify and Flask API on Render or Railway, with PostgreSQL configured through `DATABASE_URL`.
+This repository includes an AWS EC2 deployment configuration based on the LaunchBot deployment-assistant pattern: Nginx exposes only HTTP traffic, Gunicorn runs Flask privately on `127.0.0.1:8000`, and Flask serves both the built React client and `/api` endpoints.
 
-Set the backend's `CORS_ORIGINS` to the deployed frontend URL, set `VITE_API_URL` to the deployed backend `/api` URL, use new production secrets for `SECRET_KEY` and `JWT_SECRET_KEY`, and configure `OPENAI_API_KEY` in the hosting provider's secret manager. After deployment, complete the manual verification checklist above using the public URL.
+1. Launch an Amazon Linux 2023 EC2 instance. Open inbound ports **22** (your IP only) and **80** (public); do not open Flask or Gunicorn ports.
+2. Install server packages: `sudo dnf install -y git nginx unzip rsync python3.11 python3.11-pip nodejs npm`.
+3. From this repository root, create the upload archive with `bash scripts/create_deployment_zip.sh`, then upload it to the EC2 instance using `scp`.
+4. On EC2, extract it into `/var/www/studymate`, create `backend/.venv`, run `python -m pip install -r requirements.txt`, and copy `deployment/sample-prod.env` to `backend/.env`.
+5. Generate unique `SECRET_KEY` and `JWT_SECRET_KEY` values; set `CORS_ORIGINS` to the public EC2 address and set `OPENAI_API_KEY` through the server's protected `.env` file. Never commit those values.
+6. Run `cd frontend && npm install && npm run build:flask`. This places the production React build in `backend/frontend_dist`, which Flask serves.
+7. Copy `deployment/studymate.service` to `/etc/systemd/system/studymate.service` and `deployment/nginx-studymate.conf` to `/etc/nginx/conf.d/studymate.conf`. Enable and start both services.
+8. Verify from the EC2 instance with `curl -i http://127.0.0.1/api/health`, then open `http://YOUR_EC2_PUBLIC_DNS` in a browser and complete the manual verification checklist.
 
-**Current limitation:** this repository does not yet include a deployed public URL. Deployment is the final operational step; the application is configured to deploy without code changes once the hosting accounts and production variables are supplied.
+**Current limitation:** this repository does not yet include a deployed public URL. The remaining steps require an AWS account, EC2 instance, and an OpenAI API key owned by the deployer.
 
 ## Scope changes and future improvements
 
