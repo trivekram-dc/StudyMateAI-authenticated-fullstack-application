@@ -1,6 +1,70 @@
-Project Pitch: Authenticated Full-Stack AI Application
-Project Title
-StudyMate AI: A Source-Backed AI Study Assistant
+# StudyMate AI
+
+StudyMate AI is an authenticated, full-stack study assistant that keeps a student's notes organized by course and turns those notes into source-backed answers, summaries, and practice questions.
+
+## MVP capabilities
+
+- JWT registration, sign-in, session restoration, and protected frontend routes.
+- Private course and study-material CRUD, enforced by backend ownership checks.
+- A relational SQLite data model: `User` → `Course` → `StudyMaterial`.
+- Text-first study materials (notes, readings, and slides) to keep the MVP dependable.
+- A local retrieval workflow that chunks content, ranks matching passages, and returns them as visible sources.
+- Summary, ask, and quiz endpoints connected to the study assistant UI.
+
+## Project layout
+
+```text
+backend/       Flask REST API, SQLAlchemy models, JWT auth, retrieval service
+frontend/      React + Vite client and protected study workspace
+```
+
+## Run locally
+
+### API
+
+1. Create and activate a virtual environment in `backend`.
+2. Install dependencies: `pip install -r requirements.txt`
+3. Copy `.env.example` to `.env` and replace the development secrets.
+4. Start the API: `python run.py`
+
+The API starts at `http://localhost:5000`; its health endpoint is `GET /api/health`.
+
+### Client
+
+1. In `frontend`, copy `.env.example` to `.env` if the API is not running at its default address.
+2. Install packages: `npm install`
+3. Start the client: `npm run dev`
+
+Open the local address shown by Vite (normally `http://localhost:5173`).
+
+## Key endpoints
+
+| Area | Endpoints |
+| --- | --- |
+| Auth | `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` |
+| Courses | `GET, POST /api/courses`, `GET, PUT, DELETE /api/courses/:id` |
+| Materials | `GET, POST /api/materials`, `GET, PUT, DELETE /api/materials/:id` |
+| Study tools | `POST /api/ai/summarize`, `POST /api/ai/ask`, `POST /api/ai/quiz` |
+
+All endpoints other than registration, login, and health require an `Authorization: Bearer <JWT>` header.
+
+## Retrieval note
+
+The MVP uses a lightweight local, keyword-ranked retrieval layer so it works without an external key or vector database. It preserves the RAG product flow—ingestion, chunking, retrieval, response, and cited passages—and gives a safe foundation for a later OpenAI embeddings/vector-store upgrade.
+
+## Test the API
+
+From `backend`, run:
+
+```text
+python -m unittest discover -s tests
+```
+
+The tests cover user-boundary enforcement and source-backed retrieval.
+
+---
+
+## Original capstone pitch
 
 Deliverable 1: Business Problem Scenario
 For my capstone project, I want to build an AI study assistant for students. The main idea is to create a web app where students can upload or save their course materials, organize them by class or topic, and then use AI to get summaries, ask questions, and generate quiz questions based on their own study content.
