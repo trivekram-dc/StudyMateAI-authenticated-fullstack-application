@@ -1,0 +1,15 @@
+[Unit]
+Description=StudyMate AI Flask application
+After=network.target
+
+[Service]
+User=ec2-user
+Group=nginx
+WorkingDirectory=/var/www/studymate/backend
+EnvironmentFile=/var/www/studymate/backend/.env
+ExecStart=/var/www/studymate/backend/.venv/bin/gunicorn --workers 2 --threads 4 --timeout 120 --bind 127.0.0.1:8000 run:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
