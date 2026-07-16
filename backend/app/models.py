@@ -63,3 +63,11 @@ class StudyMaterial(db.Model):
         if include_content:
             data["content"] = self.content
         return data
+
+
+class RevokedToken(db.Model):
+    """Persist revoked JWT IDs so logout invalidates the current access token."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    jti = db.Column(db.String(64), nullable=False, unique=True, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)

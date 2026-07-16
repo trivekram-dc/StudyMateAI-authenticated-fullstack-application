@@ -33,6 +33,12 @@ class StudyMateApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()["sources"][0]["materialTitle"], "Cell notes")
 
+    def test_logout_revokes_the_current_token(self):
+        token = self.register()
+        headers = {"Authorization": f"Bearer {token}"}
+        self.assertEqual(self.client.post("/api/auth/logout", headers=headers).status_code, 204)
+        self.assertEqual(self.client.get("/api/auth/me", headers=headers).status_code, 401)
+
 
 if __name__ == "__main__":
     unittest.main()

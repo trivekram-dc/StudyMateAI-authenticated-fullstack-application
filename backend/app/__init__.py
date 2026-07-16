@@ -16,6 +16,8 @@ def create_app(test_config=None):
         JWT_SECRET_KEY=os.getenv("JWT_SECRET_KEY", "development-jwt-change-me"),
         SQLALCHEMY_DATABASE_URI=os.getenv("DATABASE_URL", "sqlite:///studymate.db"),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        OPENAI_API_KEY=os.getenv("OPENAI_API_KEY", ""),
+        OPENAI_MODEL=os.getenv("OPENAI_MODEL", "gpt-5-mini"),
     )
     if test_config:
         app.config.update(test_config)
@@ -23,7 +25,12 @@ def create_app(test_config=None):
     origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
     CORS(app, resources={r"/api/*": {"origins": origins}})
     db.init_app(app)
-    JWTManager(app)
+    jwt = JWTManager(app)
+
+    @jwt.token_in_blocklist_loader
+    def is_token_revoked(_jwt_header, jwt_payload):
+        from .models import RevokedToken
+        return db.session.query(RevokedToken.id).filter_by(jti=jwt_payload["jti"]).first() is not None
 
     from .routes.ai import ai_bp
     from .routes.auth import auth_bp

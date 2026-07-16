@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, jwt_required
 from sqlalchemy import func
 
 from ..extensions import db
-from ..models import User
+from ..models import RevokedToken, User
 from .helpers import error, require_fields
 
 auth_bp = Blueprint("auth", __name__)
@@ -47,3 +47,11 @@ def me():
     if not user:
         return error("User not found.", 404)
     return jsonify({"user": user.to_dict()})
+
+
+@auth_bp.post("/logout")
+@jwt_required()
+def logout():
+    db.session.add(RevokedToken(jti=get_jwt()["jti"]))
+    db.session.commit()
+    return "", 204
